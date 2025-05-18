@@ -29,3 +29,25 @@ docker run -it -p 5000:5000 flask-unet-app /bin/bash
 
 
 curl -X POST -H "Content-Type: application/json" -d '{"image_name":"000001_1.jpg"}' http://localhost:5000/predict
+
+
+docker build -t navalbisht444/image-processing-backend:latest .
+docker push navalbisht444/image-processing-backend:latest
+
+docker build -t navalbisht444/image-processing-frontend:latest .
+docker push navalbisht444/image-processing-frontend:latest
+
+kubectl apply -f mysql.yaml
+kubectl apply -f elasticsearch.yaml
+kubectl apply -f kibana.yaml
+kubectl apply -f logstash.yaml
+kubectl apply -f filebeat.yaml
+kubectl apply -f backend.yaml
+kubectl apply -f frontend.yaml
+
+
+http://192.168.49.2:30000                #frontend
+http://192.168.49.2:30001                #backend
+http://192.168.49.2:30000                #kibana
+
+image-processing-logs-* index

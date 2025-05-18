@@ -7,7 +7,8 @@ RUN apt-get update && \
     gcc \
     python3-dev \
     libgl1 \
-    libglib2.0-0 && \
+    libglib2.0-0 \
+    gunicorn && \
     rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip and install dependencies
