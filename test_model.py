@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 
+
 def preprocess_image(image_path, target_size=(64, 64)):
     """Preprocess image for model input."""
     img = Image.open(image_path).convert('L')  # Convert to grayscale
