@@ -1,0 +1,13 @@
+# .dockerignore
+.git
+*.md
+Dockerfile
+app_grok.py
+important_commands.txt
+model.py
+output/
+output.jpg
+prj/
+temp/
+uploads/
+Uploads/

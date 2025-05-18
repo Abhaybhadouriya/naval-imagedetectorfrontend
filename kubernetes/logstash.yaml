@@ -1,0 +1,125 @@
+---
+# Logstash ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: image-processing-logstash-config
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/mysql-connector-java-8.0.28.jar"
+        jdbc_driver_class => "com.mysql.cj.jdbc.Driver"
+        jdbc_connection_string => "jdbc:mysql://image-processing-mysql:3306/image_processing"
+        jdbc_user => "naval"
+        jdbc_password => "password"  # Replace with actual password
+        schedule => "* * * * *"  # Run every minute
+        statement => "SELECT id, original_filename, processed_filename, time, status FROM process WHERE time > :sql_last_value"
+        use_column_value => true
+        tracking_column => "time"
+        tracking_column_type => "timestamp"
+        last_run_metadata_path => "/usr/share/logstash/.logstash_jdbc_last_run"
+      }
+    }
+    filter {
+      if [message] and "_jsonparsefailure" in [tags] {
+        mutate {
+          add_field => { "malformed_log" => "%{message}" }
+          remove_field => ["message"]
+        }
+      }
+      if [type] == "mysql_process" {
+        mutate {
+          add_field => { "source" => "mysql_process_table" }
+        }
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["http://image-processing-elasticsearch:9200"]
+        index => "image-processing-logs-%{+YYYY.MM.dd}"
+      }
+      stdout { codec => rubydebug }  # For debugging
+    }
+---
+# Logstash Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-processing-logstash
+spec:
+  selector:
+    matchLabels:
+      app: image-processing-logstash
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: image-processing-logstash
+    spec:
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:8.8.0
+          ports:
+            - containerPort: 5044
+          volumeMounts:
+            - name: logstash-config
+              mountPath: /usr/share/logstash/pipeline
+            - name: mysql-connector
+              mountPath: /usr/share/logstash/mysql-connector-java-8.0.28.jar
+              subPath: mysql-connector-java-8.0.28.jar
+          # resources:
+          #   requests:
+          #     cpu: "100m"
+          #     memory: "512Mi"
+          #   limits:
+          #     cpu: "200m"
+          #     memory: "1Gi"
+      volumes:
+        - name: logstash-config
+          configMap:
+            name: image-processing-logstash-config
+        - name: mysql-connector
+          emptyDir: {}
+      initContainers:
+        - name: download-mysql-connector
+          image: curlimages/curl
+          command: ["sh", "-c", "curl -L -o /mysql-connector/mysql-connector-java-8.0.28.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar"]
+          volumeMounts:
+            - name: mysql-connector
+              mountPath: /mysql-connector
+---
+# Logstash Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-processing-logstash
+spec:
+  ports:
+    - port: 5044
+      targetPort: 5044
+  selector:
+    app: image-processing-logstash
+---
+# Logstash HPA
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: image-processing-logstash-hpa
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: image-processing-logstash
+#   minReplicas: 1
+#   maxReplicas: 5
+#   metrics:
+#     - type: Resource
+#       resource:
+#         name: cpu
+#         target:
+#           type: Utilization
+#           averageUtilization: 50
