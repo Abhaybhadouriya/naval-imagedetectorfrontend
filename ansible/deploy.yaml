@@ -1,0 +1,44 @@
+- name: Deploy Kubernetes resources
+  hosts: kubernetes
+  tasks:
+    - name: Apply MySQL deployment
+      kubernetes.core.k8s:
+        state: present
+        src: "../kubernetes/mysql.yaml"
+      register: mysql_result
+      failed_when: mysql_result is failed
+
+    - name: Apply Frontend deployment
+      kubernetes.core.k8s:
+        state: present
+        src: "../kubernetes/frontend.yaml"
+      register: frontend_result
+      failed_when: frontend_result is failed
+
+    - name: Apply Backend deployment
+      kubernetes.core.k8s:
+        state: present
+        src: "../kubernetes/backend.yaml"
+      register: backend_result
+      failed_when: backend_result is failed
+
+    - name: Apply Elasticsearch deployment
+      kubernetes.core.k8s:
+        state: present
+        src: "../kubernetes/elasticsearch.yaml"
+      register: elasticsearch_result
+      failed_when: elasticsearch_result is failed
+
+    - name: Apply Filebeat deployment
+      kubernetes.core.k8s:
+        state: present
+        src: "../kubernetes/filebeat.yaml"
+      register: filebeat_result
+      failed_when: filebeat_result is failed
+
+    - name: Apply Kibana deployment
+      kubernetes.core.k8s:
+        state: present
+        src: "../kubernetes/kibana.yaml"
+      register: kibana_result
+      failed_when: kibana_result is failed
