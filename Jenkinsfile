@@ -2,23 +2,21 @@ pipeline {
     agent none
     environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerHubCred') // Docker Hub credentials ID
-        DOCKERHUB_USERNAME = 'navalbisht444' // Replace with your Docker Hub username
-        REPO_URL = 'https://github.com/Naval-Bisht/imagedetectorfrontend'
-        EMAIL_RECIPIENT = 'navalbisht444@gmail.com' // Replace with your email
+        DOCKERHUB_USERNAME = 'navalbisht444' // Your Docker Hub username
+        REPO_URL = 'https://github.com/Naval-Bisht/imagedetectorfrontend.git'
+        EMAIL_RECIPIENT = 'navalbisht444@gmail.com' // Your email
         FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/maskdetector"
         BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/maskdetectorbackend"
     }
     stages {
         stage('Checkout Code') {
-            agent {
-                docker {
-                    image 'alpine/git:latest'
-                    args '-u root'
-                }
-            }
+            agent any
             steps {
                 echo 'Checking out code...'
-                git url: "${REPO_URL}", branch: 'main'
+                checkout([$class: 'GitSCM',
+                          branches: [[name: '*/main']],
+                          userRemoteConfigs: [[url: "${REPO_URL}",
+                                              credentialsId: 'e6f4d547-b3b9-4c0b-9dea-a5d41ccbc676']]])
             }
         }
         stage('Build Frontend Docker Image') {
@@ -142,27 +140,33 @@ pipeline {
         }
     }
     post {
+        always {
+            node('') {
+                echo 'Cleaning up Docker images...'
+                sh """
+                    docker rmi ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} || true
+                    docker rmi ${FRONTEND_IMAGE}:latest || true
+                    docker rmi ${BACKEND_IMAGE}:${env.BUILD_NUMBER} || true
+                    docker rmi ${BACKEND_IMAGE}:latest || true
+                """
+                cleanWs()
+            }
+        }
         success {
-            echo 'Pipeline completed successfully!'
-            mail to: "${EMAIL_RECIPIENT}",
-                 subject: "✅ Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "The pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER} completed successfully.\nCheck the build at ${env.BUILD_URL}"
+            node('') {
+                echo 'Pipeline completed successfully!'
+                mail to: "${EMAIL_RECIPIENT}",
+                     subject: "✅ Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "The pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER} completed successfully.\nCheck the build at ${env.BUILD_URL}"
+            }
         }
         failure {
-            echo 'Pipeline failed!'
-            mail to: "${EMAIL_RECIPIENT}",
-                 subject: "❌ Jenkins Pipeline Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "The pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck the build at ${env.BUILD_URL}"
-        }
-        always {
-            echo 'Cleaning up Docker images...'
-            sh """
-                docker rmi ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} || true
-                docker rmi ${FRONTEND_IMAGE}:latest || true
-                docker rmi ${BACKEND_IMAGE}:${env.BUILD_NUMBER} || true
-                docker rmi ${BACKEND_IMAGE}:latest || true
-            """
-            cleanWs()
+            node('') {
+                echo 'Pipeline failed!'
+                mail to: "${EMAIL_RECIPIENT}",
+                     subject: "❌ Jenkins Pipeline Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "The pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck the build at ${env.BUILD_URL}"
+            }
         }
     }
 }
