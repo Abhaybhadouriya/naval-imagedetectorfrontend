@@ -1,150 +1,39 @@
 ---
-- name: Deploy Kubernetes resources
+- name: Deploy Kubernetes Resources
   hosts: localhost
-  connection: local
+  gather_facts: no
   tasks:
-    - name: Apply MySQL deployment
+    - name: Apply MySQL Deployment
       kubernetes.core.k8s:
         state: present
         src: kubernetes/mysql.yaml
-      register: mysql_result
-      retries: 3
-      delay: 5
-      until: mysql_result is success
 
-    - name: Apply Frontend deployment
-      kubernetes.core.k8s:
-        state: present
-        src: kubernetes/frontend.yaml
-      register: frontend_result
-      retries: 3
-      delay: 5
-      until: frontend_result is success
-
-    - name: Apply Backend deployment
-      kubernetes.core.k8s:
-        state: present
-        src: kubernetes/backend.yaml
-      register: backend_result
-      retries: 3
-      delay: 5
-      until: backend_result is success
-
-    - name: Apply Elasticsearch deployment
+    - name: Apply Elasticsearch Deployment
       kubernetes.core.k8s:
         state: present
         src: kubernetes/elasticsearch.yaml
-      register: elasticsearch_result
-      retries: 3
-      delay: 5
-      until: elasticsearch_result is success
 
-    - name: Apply Logstash deployment
-      kubernetes.core.k8s:
-        state: present
-        src: kubernetes/logstash.yaml
-      register: logstash_result
-      retries: 3
-      delay: 5
-      until: logstash_result is success
-
-    - name: Apply Filebeat deployment
+    - name: Apply Filebeat Deployment
       kubernetes.core.k8s:
         state: present
         src: kubernetes/filebeat.yaml
-      register: filebeat_result
-      retries: 3
-      delay: 5
-      until: filebeat_result is success
 
-    - name: Apply Kibana deployment
+    - name: Apply Logstash Deployment
+      kubernetes.core.k8s:
+        state: present
+        src: kubernetes/logstash.yaml
+
+    - name: Apply Kibana Deployment
       kubernetes.core.k8s:
         state: present
         src: kubernetes/kibana.yaml
-      register: kibana_result
-      retries: 3
-      delay: 5
-      until: kibana_result is success
 
+    - name: Apply Backend Deployment
+      kubernetes.core.k8s:
+        state: present
+        src: kubernetes/backend.yaml
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# - name: Deploy Kubernetes resources
-#   hosts: kubernetes
-#   tasks:
-#     - name: Apply MySQL deployment
-#       kubernetes.core.k8s:
-#         state: present
-#         src: "../kubernetes/mysql.yaml"
-#       register: mysql_result
-#       failed_when: mysql_result is failed
-
-#     - name: Apply Frontend deployment
-#       kubernetes.core.k8s:
-#         state: present
-#         src: "../kubernetes/frontend.yaml"
-#       register: frontend_result
-#       failed_when: frontend_result is failed
-
-#     - name: Apply Backend deployment
-#       kubernetes.core.k8s:
-#         state: present
-#         src: "../kubernetes/backend.yaml"
-#       register: backend_result
-#       failed_when: backend_result is failed
-
-#     - name: Apply Elasticsearch deployment
-#       kubernetes.core.k8s:
-#         state: present
-#         src: "../kubernetes/elasticsearch.yaml"
-#       register: elasticsearch_result
-#       failed_when: elasticsearch_result is failed
-
-#     - name: Apply Filebeat deployment
-#       kubernetes.core.k8s:
-#         state: present
-#         src: "../kubernetes/filebeat.yaml"
-#       register: filebeat_result
-#       failed_when: filebeat_result is failed
-
-#     - name: Apply Kibana deployment
-#       kubernetes.core.k8s:
-#         state: present
-#         src: "../kubernetes/kibana.yaml"
-#       register: kibana_result
-#       failed_when: kibana_result is failed
+    - name: Apply Frontend Deployment
+      kubernetes.core.k8s:
+        state: present
+        src: kubernetes/frontend.yamls
