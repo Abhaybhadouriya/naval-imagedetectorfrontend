@@ -1,59 +1,32 @@
-import os
-import numpy as np
 import tensorflow as tf
+import numpy as np
 from PIL import Image
+import os
 
-
-def preprocess_image(image_path, target_size=(64, 64)):
-    """Preprocess image for model input."""
-    img = Image.open(image_path).convert('L')  # Convert to grayscale
-    img = img.resize(target_size)
+def load_and_preprocess_image(image_path):
+    img = Image.open(image_path).resize((128, 128))  # Adjusted for U-Net model
     img_array = np.array(img) / 255.0  # Normalize
-    img_array = img_array.reshape(1, target_size[0], target_size[1], 1)  # Add batch and channel
-    return img_array
+    return np.expand_dims(img_array, axis=0)
 
 def test_model():
-    """Test the model with an image from the images folder."""
-    model_path = 'model.h5'
-    image_folder = 'images'
-    image_file = '000000_1.jpg'  # Replace with your image filename
-
-    # Check if model and image exist
-    if not os.path.exists(model_path):
-        print(f"Error: Model file {model_path} not found")
-        return False
-    image_path = os.path.join(image_folder, image_file)
-    if not os.path.exists(image_path):
-        print(f"Error: Image file {image_path} not found")
-        return False
-
     # Load model
-    try:
-        model = tf.keras.models.load_model(model_path)
-    except Exception as e:
-        print(f"Error loading model: {e}")
-        return False
-
-    # Preprocess image and predict
-    try:
-        img_array = preprocess_image(image_path)
-        prediction = model.predict(img_array)
-        print(f"Prediction: {prediction}")
-        # Validate prediction (adjust based on your model's output, e.g., binary classification)
-        if prediction.shape[0] == 1 and len(prediction[0]) == 1:  # Assuming binary output
-            print("Model test passed")
-            return True
-        else:
-            print("Unexpected prediction shape")
-            return False
-    except Exception as e:
-        print(f"Error during prediction: {e}")
-        return False
+    model = tf.keras.models.load_model('maskdetectorbackend/unet_model.h5')
+    
+    # Directory containing test images
+    image_dir = 'maskdetectorbackend/images'
+    if not os.path.exists(image_dir):
+        raise FileNotFoundError(f"Directory {image_dir} not found")
+    
+    # Test each image
+    for image_file in os.listdir(image_dir):
+        if image_file.endswith(('.png', '.jpg', '.jpeg')):
+            image_path = os.path.join(image_dir, image_file)
+            try:
+                img_data = load_and_preprocess_image(image_path)
+                prediction = model.predict(img_data)
+                print(f"Prediction for {image_file}: {prediction}")
+            except Exception as e:
+                print(f"Error processing {image_file}: {str(e)}")
 
 if __name__ == "__main__":
-    if test_model():
-        print("Test successful")
-        exit(0)
-    else:
-        print("Test failed")
-        exit(1)
+    test_model()
