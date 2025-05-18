@@ -1,5 +1,16 @@
-kubernetes:
-  hosts:
-    localhost:
-      ansible_connection: local
-      kubeconfig: ~/.kube/config
+[all]
+localhost ansible_connection=local
+
+[kube_control_plane]
+localhost
+
+[etcd]
+localhost
+
+[kube_node]
+localhost
+
+[k8s_cluster:children]
+kube_control_plane
+kube_node
+etcd
