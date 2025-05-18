@@ -16,7 +16,7 @@ import sys
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://192.168.49.2:30000/", "http://image-processing-backend:5000/"]}})
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://192.168.49.2:30000/", "http://image-processing-backend:5000/","http://192.168.49.2:30001/"]}})
 
 # Configure logging for JSON output
 logger = logging.getLogger('image-processing-backend')
