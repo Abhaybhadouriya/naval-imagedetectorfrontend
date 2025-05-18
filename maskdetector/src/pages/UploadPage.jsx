@@ -22,8 +22,8 @@ const UploadPage = () => {
       const token = await user.getIdToken();
       const formData = new FormData();
       formData.append('image_name', file);
-
-      const response = await fetch('http://image-processing-backend:5000/predict', {
+          //http://image-processing-backend:5000/predict
+      const response = await fetch('http://192.168.49.2:30001/predict', {  
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

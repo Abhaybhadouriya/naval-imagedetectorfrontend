@@ -15,8 +15,24 @@ import sys
 
 
 
+# app = Flask(__name__)
+# CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://192.168.49.2:30000/", "http://image-processing-backend:5000/","http://192.168.49.2:30001/"]}})
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://192.168.49.2:30000/", "http://image-processing-backend:5000/","http://192.168.49.2:30001/"]}})
+CORS(app, resources={r"/*": {
+    "origins": [
+        "http://localhost:3000",
+        "http://192.168.49.2:30000",  # Add without trailing slash
+        "http://192.168.49.2:30000/", # Keep with trailing slash
+        "http://192.168.49.2:30001",
+        "http://192.168.49.2:30001/",
+        "http://image-processing-backend:5000",
+        "http://image-processing-backend:5000/"
+    ],
+    "methods": ["GET", "POST", "OPTIONS"],  # Explicitly allow POST and OPTIONS
+    "allow_headers": ["Content-Type", "Authorization"],  # Allow required headers
+    "supports_credentials": True  # Optional, only if credentials are needed
+}})
+
 
 # Configure logging for JSON output
 logger = logging.getLogger('image-processing-backend')

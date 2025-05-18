@@ -13,7 +13,7 @@ const HistoryPage = () => {
       try {
         const token = await user.getIdToken();
         // Fetch all records from /result endpoint
-        const response = await fetch('http://image-processing-backend:5000/result', {
+        const response = await fetch('http://192.168.49.2:30001/result', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -26,7 +26,7 @@ const HistoryPage = () => {
             const enrichedHistory = await Promise.all(
               data.records.map(async (record) => {
                 try {
-                  const imageResponse = await fetch(`http://image-processing-backend:5000/image/${record.id}`, {
+                  const imageResponse = await fetch(`http://192.168.49.2:30001/image/${record.id}`, {
                     headers: {
                       Authorization: `Bearer ${token}`,
                     },

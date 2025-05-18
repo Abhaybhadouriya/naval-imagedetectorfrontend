@@ -48,6 +48,6 @@ kubectl apply -f frontend.yaml
 
 http://192.168.49.2:30000                #frontend
 http://192.168.49.2:30001                #backend
-http://192.168.49.2:30000                #kibana
+http://192.168.49.2:30007                #kibana
 
 image-processing-logs-* index
