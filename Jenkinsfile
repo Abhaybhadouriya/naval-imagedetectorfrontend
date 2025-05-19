@@ -2,7 +2,7 @@ pipeline {
     agent none
    environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerHubCred') // Docker Hub credentials ID
-        DOCKERHUB_USERNAME = 'navalbisht444'
+        DOCKERHUB_USERNAME = 'abhay003'
         REPO_URL = 'https://github.com/Abhaybhadouriya/naval-imagedetectorfrontend.git'
         EMAIL_RECIPIENT = 'navalbisht444@gmail.com'
         FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/image-processing-frontend"
