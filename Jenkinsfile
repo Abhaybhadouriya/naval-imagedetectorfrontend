@@ -111,27 +111,27 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            node('any') { // Use 'any' instead of 'master' for flexibility
-                script {
-                    // Clean up Docker images
-                    sh """
-                        docker rmi ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} || true
-                        docker rmi ${FRONTEND_IMAGE}:latest || true
-                        docker rmi ${BACKEND_IMAGE}:${env.BUILD_NUMBER} || true
-                        docker rmi ${BACKEND_IMAGE}:latest || true
-                    """
-                    cleanWs() // Clean workspace
-                }
-                // Send email notification
-                emailext (
-                    subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.result}",
-                    body: """Build status: ${currentBuild.result}
-                             Check details here: ${env.BUILD_URL}""",
-                    to: "${EMAIL_RECIPIENT}"
-                )
-            }
-        }
-    }
+    // post {
+    //     always {
+    //         node('any') { // Use 'any' instead of 'master' for flexibility
+    //             script {
+    //                 // Clean up Docker images
+    //                 sh """
+    //                     docker rmi ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} || true
+    //                     docker rmi ${FRONTEND_IMAGE}:latest || true
+    //                     docker rmi ${BACKEND_IMAGE}:${env.BUILD_NUMBER} || true
+    //                     docker rmi ${BACKEND_IMAGE}:latest || true
+    //                 """
+    //                 cleanWs() // Clean workspace
+    //             }
+    //             // Send email notification
+    //             emailext (
+    //                 subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.result}",
+    //                 body: """Build status: ${currentBuild.result}
+    //                          Check details here: ${env.BUILD_URL}""",
+    //                 to: "${EMAIL_RECIPIENT}"
+    //             )
+    //         }
+    //     }
+    // }
 }
