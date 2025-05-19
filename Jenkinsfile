@@ -23,92 +23,85 @@ pipeline {
             }
         }
 
-
         // Frontend Pipeline
-// Frontend Pipeline
-stage('Build Frontend Docker Image') {
-    agent any // No need for node:18 since Dockerfile handles the build
-    steps {
-        dir('maskdetector') {
-            sh "docker build -t ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} ."
-            sh "docker tag ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} ${FRONTEND_IMAGE}:latest"
-        }
-    }
-}
-
-stage('Verify Frontend Docker Image') {
-    agent any
-    steps {
-        sh "docker run --rm ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} nginx -t"
-    }
-}
-
-stage('Push Frontend Docker Image') {
-    agent any
-    steps {
-        script {
-            docker.withRegistry('https://index.docker.io/v1/', 'DockerHubCred') {
-                sh "docker push ${FRONTEND_IMAGE}:${env.BUILD_NUMBER}"
-                sh "docker push ${FRONTEND_IMAGE}:latest"
-            }
-        }
-    }
-}
-
-        // Backend Pipeline
-          stage('Build Backend Docker Image') {
-            steps {
-                dir('backend') { // Adjust to your backend directory name
-                    sh "docker build -t ${BACKEND_IMAGE}:${env.BUILD_NUMBER} ."
-                    sh "docker tag ${BACKEND_IMAGE}:${env.BUILD_NUMBER} ${BACKEND_IMAGE}:latest"
+        stage('Build Frontend Docker Image') {
+          
+            steps{
+                script{
+                        frontendImage = docker.build("${FRONTEND_IMAGE}", './maskdetector/')
                 }
-            }
+	        }
         }
 
-        stage('Verify Backend Docker Image') {
+        stage('Verify Frontend Docker Image') {
+            agent any
             steps {
-                sh "docker run --rm ${BACKEND_IMAGE}:${env.BUILD_NUMBER} gunicorn --check-config app:app"
+                sh """
+                    docker run --rm ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} nginx -t
+                """
             }
         }
 
-        stage('Push Backend Docker Image') {
+        stage('Push Frontend Docker Image') {
+            agent any
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CRED) {
-                        sh "docker push ${BACKEND_IMAGE}:${env.BUILD_NUMBER}"
-                        sh "docker push ${BACKEND_IMAGE}:latest"
+                    docker.withRegistry('https://index.docker.io/v1/', 'DockerHubCred') {
+			         frontendImage.push()
                     }
                 }
             }
         }
-    
-  
 
-        stage('Run Model Test') {
-            agent {
-                docker {
-                    image 'python:3.10'
-                    args '-u root'
+        // Backend Pipeline
+        stage('Build Backend Docker Image') {
+            agent any
+            steps{
+                script{
+                        backendImage = docker.build("${FRONTEND_IMAGE}", './maskdetectorbackend/')
                 }
-            }
+	        }
+        }
+
+        stage('Verify Backend Docker Image') {
+            agent any
             steps {
-                dir('maskdetectorbackend') {
-                    sh 'pip install --no-cache-dir -r requirements.txt'
-                    sh 'python -m unittest discover -s . -p "test_*.py" || true'
+                sh """
+                    docker run --rm ${BACKEND_IMAGE}:${env.BUILD_NUMBER} python --version
+                """
+            }
+        }
+
+        stage('Push Backend Docker Image') {
+            agent any
+            
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'DockerHubCred') {
+			        backendImage.push()
+                    }
                 }
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            agent any
-            steps {
-                script {
-                    sh '''
-                        ansible-galaxy collection install kubernetes.core
-                        pip install kubernetes
-                        ansible-playbook -i ansible/inventory.yml ansible/deploy.yaml --vault-password-file vault_pass.txt
-                    '''
-                }
+        // stage('Run Model Test') {
+        //     agent {
+        //         docker {
+        //             image 'python:3.10'
+        //             args '-u root'
+        //         }
+        //     }
+        //     steps {
+        //         dir('maskdetectorbackend') {
+        //             sh 'pip install --no-cache-dir -r requirements.txt'
+        //             sh 'python -m unittest discover -s . -p "test_*.py" || true'
+        //         }
+        //     }
+        // }
+
+        stage('Deployment using Ansible'){
+            steps{
+                    sh 'ansible/ansible-playbook deploy.yaml'
             }
         }
 
@@ -126,9 +119,10 @@ stage('Push Frontend Docker Image') {
             node('master') {
                 script {
                     sh """
-                            // Clean up Docker images to save space
-            sh "docker rmi ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} ${FRONTEND_IMAGE}:latest || true"
-            sh "docker rmi ${BACKEND_IMAGE}:${env.BUILD_NUMBER} ${BACKEND_IMAGE}:latest || true"
+                        docker rmi ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} || true
+                        docker rmi ${FRONTEND_IMAGE}:latest || true
+                        docker rmi ${BACKEND_IMAGE}:${env.BUILD_NUMBER} || true
+                        docker rmi ${BACKEND_IMAGE}:latest || true
                     """
                     cleanWs()
                 }
