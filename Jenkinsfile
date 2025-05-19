@@ -93,11 +93,11 @@ pipeline {
             }
         }
 
-     stage('Deployment using Ansible'){
-	   steps{
-            sh 'ansible-playbook ./ansible/deploy.yaml'
-	}
-     }
+        stage('Deployment using Ansible'){
+            steps{
+                sh 'ansible-playbook ./ansible/deploy.yaml'
+	        }
+        }
 
         stage('Verify Deployment') {
             agent any
