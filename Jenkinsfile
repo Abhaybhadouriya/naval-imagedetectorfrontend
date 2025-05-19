@@ -24,47 +24,35 @@ pipeline {
         }
 
         // Frontend Pipeline
-        stage('Build Frontend Docker Image') {
-            agent {
-                docker {
-                    image 'node:18'
-                    args '-u root'
-                }
-            }
-            steps {
-                dir('maskdetector') {
-                    sh 'npm install'
-                    sh 'npm run build'
-                    sh """
-                        docker build -t ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} .
-                        docker tag ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} ${FRONTEND_IMAGE}:latest
-                    """
-                }
-            }
+// Frontend Pipeline
+stage('Build Frontend Docker Image') {
+    agent any // No need for node:18 since Dockerfile handles the build
+    steps {
+        dir('maskdetector') {
+            sh "docker build -t ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} ."
+            sh "docker tag ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} ${FRONTEND_IMAGE}:latest"
         }
+    }
+}
 
-        stage('Verify Frontend Docker Image') {
-            agent any
-            steps {
-                sh """
-                    docker run --rm ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} nginx -t
-                """
-            }
-        }
+stage('Verify Frontend Docker Image') {
+    agent any
+    steps {
+        sh "docker run --rm ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} nginx -t"
+    }
+}
 
-        stage('Push Frontend Docker Image') {
-            agent any
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'DockerHubCred') {
-                        sh """
-                            docker push ${FRONTEND_IMAGE}:${env.BUILD_NUMBER}
-                            docker push ${FRONTEND_IMAGE}:latest
-                        """
-                    }
-                }
+stage('Push Frontend Docker Image') {
+    agent any
+    steps {
+        script {
+            docker.withRegistry('https://index.docker.io/v1/', 'DockerHubCred') {
+                sh "docker push ${FRONTEND_IMAGE}:${env.BUILD_NUMBER}"
+                sh "docker push ${FRONTEND_IMAGE}:latest"
             }
         }
+    }
+}
 
         // Backend Pipeline
         stage('Build Backend Docker Image') {
