@@ -4,12 +4,7 @@
   gather_facts: no
   tasks:
     
-    - name: install pre-requisites
-      pip:
-          name:
-          - openshift
-          - pyyaml
-          - kubernetes
+    
     - name: Apply MySQL Deployment
       kubernetes.core.k8s:
         state: present
