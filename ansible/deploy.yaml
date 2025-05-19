@@ -42,7 +42,6 @@
 ---
 - name: Ansible Playbook to deploy k8s yaml files
   hosts: localhost
-  remote_user: abhay
   gather_facts: false
   tasks:
     - name: Apply all Kubernetes YAML files in a directory
