@@ -1,16 +1,2 @@
 [localhost]
-localhost ansible_connection=local
-
-[kube_control_plane]
-localhost
-
-[etcd]
-localhost
-
-[kube_node]
-localhost
-
-[k8s_cluster:children]
-kube_control_plane
-kube_node
-etcd
+localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3
