@@ -1,41 +1,56 @@
+# ---
+# - name: Deploy Kubernetes Resources
+#   hosts: localhost
+#   gather_facts: no
+#   tasks:
+    
+    
+#     - name: Apply MySQL Deployment
+#       kubernetes.core.k8s:
+#         state: present
+#         src: ../kubernetes/mysql.yaml
+
+#     - name: Apply Elasticsearch Deployment
+#       kubernetes.core.k8s:
+#         state: present
+#         src: ../kubernetes/elasticsearch.yaml
+
+#     - name: Apply Filebeat Deployment
+#       kubernetes.core.k8s:
+#         state: present
+#         src: ../kubernetes/filebeat.yaml
+
+#     - name: Apply Logstash Deployment
+#       kubernetes.core.k8s:
+#         state: present
+#         src: ../kubernetes/logstash.yaml
+
+#     - name: Apply Kibana Deployment
+#       kubernetes.core.k8s:
+#         state: present
+#         src: ../kubernetes/kibana.yaml
+
+#     - name: Apply Backend Deployment
+#       kubernetes.core.k8s:
+#         state: present
+#         src: ../kubernetes/backend.yaml
+
+#     - name: Apply Frontend Deployment
+#       kubernetes.core.k8s:
+#         state: present
+#         src: ../kubernetes/frontend.yaml # Fixed typo
 ---
-- name: Deploy Kubernetes Resources
+- name: Ansible Playbook to deploy k8s yaml files
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
   tasks:
-    
-    
-    - name: Apply MySQL Deployment
-      kubernetes.core.k8s:
-        state: present
-        src: ../kubernetes/mysql.yaml
-
-    - name: Apply Elasticsearch Deployment
-      kubernetes.core.k8s:
-        state: present
-        src: ../kubernetes/elasticsearch.yaml
-
-    - name: Apply Filebeat Deployment
-      kubernetes.core.k8s:
-        state: present
-        src: ../kubernetes/filebeat.yaml
-
-    - name: Apply Logstash Deployment
-      kubernetes.core.k8s:
-        state: present
-        src: ../kubernetes/logstash.yaml
-
-    - name: Apply Kibana Deployment
-      kubernetes.core.k8s:
-        state: present
-        src: ../kubernetes/kibana.yaml
-
-    - name: Apply Backend Deployment
-      kubernetes.core.k8s:
-        state: present
-        src: ../kubernetes/backend.yaml
-
-    - name: Apply Frontend Deployment
-      kubernetes.core.k8s:
-        state: present
-        src: ../kubernetes/frontend.yaml # Fixed typo
+    - name: Apply all Kubernetes YAML files in a directory
+      ansible.builtin.find:
+        paths: "./kubernetes/"
+        patterns: "*.yaml"
+        recurse: yes
+      register: yaml_files
+    - name: Apply Kubernetes files using kubectl
+      ansible.builtin.shell: "kubectl apply -f {{ item.path }} --kubeconfig ~/.kube/config"
+      loop: "{{ yaml_files.files }}"
+      when: yaml_files.matched > 0
