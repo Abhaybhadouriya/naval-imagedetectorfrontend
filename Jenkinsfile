@@ -22,7 +22,7 @@ pipeline {
                 }
             }
         }
-        
+
 
         // Frontend Pipeline
 // Frontend Pipeline
@@ -56,46 +56,33 @@ stage('Push Frontend Docker Image') {
 }
 
         // Backend Pipeline
-        stage('Build Backend Docker Image') {
-            agent {
-                docker {
-                    image 'python:3.10'
-                    args '-u root'
-                }
-            }
+          stage('Build Backend Docker Image') {
             steps {
-                dir('maskdetectorbackend') {
-                    sh 'pip install --no-cache-dir -r requirements.txt'
-                    sh """
-                        docker build -t ${BACKEND_IMAGE}:${env.BUILD_NUMBER} .
-                        docker tag ${BACKEND_IMAGE}:${env.BUILD_NUMBER} ${BACKEND_IMAGE}:latest
-                    """
+                dir('backend') { // Adjust to your backend directory name
+                    sh "docker build -t ${BACKEND_IMAGE}:${env.BUILD_NUMBER} ."
+                    sh "docker tag ${BACKEND_IMAGE}:${env.BUILD_NUMBER} ${BACKEND_IMAGE}:latest"
                 }
             }
         }
 
         stage('Verify Backend Docker Image') {
-            agent any
             steps {
-                sh """
-                    docker run --rm ${BACKEND_IMAGE}:${env.BUILD_NUMBER} python --version
-                """
+                sh "docker run --rm ${BACKEND_IMAGE}:${env.BUILD_NUMBER} gunicorn --check-config app:app"
             }
         }
 
         stage('Push Backend Docker Image') {
-            agent any
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'DockerHubCred') {
-                        sh """
-                            docker push ${BACKEND_IMAGE}:${env.BUILD_NUMBER}
-                            docker push ${BACKEND_IMAGE}:latest
-                        """
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CRED) {
+                        sh "docker push ${BACKEND_IMAGE}:${env.BUILD_NUMBER}"
+                        sh "docker push ${BACKEND_IMAGE}:latest"
                     }
                 }
             }
         }
+    
+  
 
         stage('Run Model Test') {
             agent {
@@ -139,10 +126,9 @@ stage('Push Frontend Docker Image') {
             node('master') {
                 script {
                     sh """
-                        docker rmi ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} || true
-                        docker rmi ${FRONTEND_IMAGE}:latest || true
-                        docker rmi ${BACKEND_IMAGE}:${env.BUILD_NUMBER} || true
-                        docker rmi ${BACKEND_IMAGE}:latest || true
+                            // Clean up Docker images to save space
+            sh "docker rmi ${FRONTEND_IMAGE}:${env.BUILD_NUMBER} ${FRONTEND_IMAGE}:latest || true"
+            sh "docker rmi ${BACKEND_IMAGE}:${env.BUILD_NUMBER} ${BACKEND_IMAGE}:latest || true"
                     """
                     cleanWs()
                 }
