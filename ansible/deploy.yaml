@@ -6,34 +6,34 @@
     - name: Apply MySQL Deployment
       kubernetes.core.k8s:
         state: present
-        src: kubernetes/mysql.yaml
+        src: ../kubernetes/mysql.yaml
 
     - name: Apply Elasticsearch Deployment
       kubernetes.core.k8s:
         state: present
-        src: kubernetes/elasticsearch.yaml
+        src: ../kubernetes/elasticsearch.yaml
 
     - name: Apply Filebeat Deployment
       kubernetes.core.k8s:
         state: present
-        src: kubernetes/filebeat.yaml
+        src: ../kubernetes/filebeat.yaml
 
     - name: Apply Logstash Deployment
       kubernetes.core.k8s:
         state: present
-        src: kubernetes/logstash.yaml
+        src: ../kubernetes/logstash.yaml
 
     - name: Apply Kibana Deployment
       kubernetes.core.k8s:
         state: present
-        src: kubernetes/kibana.yaml
+        src: ../kubernetes/kibana.yaml
 
     - name: Apply Backend Deployment
       kubernetes.core.k8s:
         state: present
-        src: kubernetes/backend.yaml
+        src: ../kubernetes/backend.yaml
 
     - name: Apply Frontend Deployment
       kubernetes.core.k8s:
         state: present
-        src: kubernetes/frontend.yamls
+        src: ../kubernetes/frontend.yaml
