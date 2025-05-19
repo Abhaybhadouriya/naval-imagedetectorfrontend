@@ -1,4 +1,5 @@
 pipeline {
+    agent none
    environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerHubCred') // Docker Hub credentials ID
         DOCKERHUB_USERNAME = 'navalbisht444'
