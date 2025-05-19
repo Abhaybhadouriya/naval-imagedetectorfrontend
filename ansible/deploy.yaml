@@ -36,4 +36,4 @@
     - name: Apply Frontend Deployment
       kubernetes.core.k8s:
         state: present
-        src: ../kubernetes/frontend.yaml
+        src: ../kubernetes/frontend.yaml # Fixed typo
