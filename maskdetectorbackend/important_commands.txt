@@ -51,3 +51,10 @@ http://192.168.49.2:30001                #backend
 http://192.168.49.2:30007                #kibana
 
 image-processing-logs-* index
+
+emailext (
+                    subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.result}",
+                    body: """Build status: ${currentBuild.result}
+                             Check details here: ${env.BUILD_URL}""",
+                    to: "${EMAIL_RECIPIENT}"
+                )
