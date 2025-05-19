@@ -1,6 +1,5 @@
 pipeline {
-    agent none // No default agent; each stage must specify its own
-    environment {
+   environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerHubCred') // Docker Hub credentials ID
         DOCKERHUB_USERNAME = 'navalbisht444'
         REPO_URL = 'https://github.com/Naval-Bisht/imagedetectorfrontend.git'
