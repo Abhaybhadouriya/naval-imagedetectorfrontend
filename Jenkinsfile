@@ -3,7 +3,7 @@ pipeline {
    environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerHubCred') // Docker Hub credentials ID
         DOCKERHUB_USERNAME = 'navalbisht444'
-        REPO_URL = 'https://github.com/Naval-Bisht/imagedetectorfrontend.git'
+        REPO_URL = 'https://github.com/Abhaybhadouriya/naval-imagedetectorfrontend.git'
         EMAIL_RECIPIENT = 'navalbisht444@gmail.com'
         FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/image-processing-frontend"
         BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/image-processing-backend"
