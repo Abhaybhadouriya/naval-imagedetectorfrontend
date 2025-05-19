@@ -93,20 +93,11 @@ pipeline {
             }
         }
 
-        stage('Deployment using Ansible') {
-            agent any
-            steps {
-                script {
-                     sh 'chmod -R u+rwX /var/lib/jenkins/workspace/maskman_mini/ansible /var/lib/jenkins/workspace/maskman_mini/kubernetes'
-                     withEnv(["ANSIBLE_HOST_KEY_CHECKING=False"]) {   
-                    ansiblePlaybook(
-                        playbook: 'ansible/deploy.yaml',
-                        inventory: 'inventory'
-                    )
-                    }
-                }
-            }
-        }
+     stage('Deployment using Ansible'){
+	   steps{
+            sh 'ansible-playbook ./ansible/deploy.yaml'
+	}
+     }
 
         stage('Verify Deployment') {
             agent any
