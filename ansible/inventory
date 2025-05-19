@@ -1,4 +1,4 @@
-[all]
+[localhost]
 localhost ansible_connection=local
 
 [kube_control_plane]

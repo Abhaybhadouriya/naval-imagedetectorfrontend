@@ -34,7 +34,7 @@ pipeline {
                 }
             }
         }
-        
+
 
         stage('Verify Frontend Docker Image') {
             agent any
@@ -94,11 +94,15 @@ pipeline {
         }
 
         stage('Deployment using Ansible') {
-            agent any // Specify agent
+            agent any
             steps {
                 script {
-                    // Correct Ansible command (adjust path to playbook as needed)
-                    sh 'ansible-playbook ansible/deploy.yaml'
+                     withEnv(["ANSIBLE_HOST_KEY_CHECKING=False"]) {   
+                    ansiblePlaybook(
+                        playbook: 'ansible/deploy.yaml',
+                        inventory: 'inventory'
+                    )
+                    }
                 }
             }
         }
