@@ -34,6 +34,7 @@ pipeline {
                 }
             }
         }
+        
 
         stage('Verify Frontend Docker Image') {
             agent any
